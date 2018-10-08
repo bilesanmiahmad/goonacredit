@@ -7,10 +7,12 @@ from rest_framework.authtoken.models import Token
 
 from django.contrib.auth.hashers import check_password
 
-from accounts.serializers import FarmerSerializer, SignupSerializer, UserSerializer, SignInSerializer
+from accounts.serializers import (
+    FarmerSerializer, SignupSerializer, UserSerializer,
+    SignInSerializer, MerchantProfileSerializer, ExtensionProfileSerializer)
 from rest_framework.permissions import AllowAny
 
-from accounts.models import Farmer, User
+from accounts.models import Farmer, User, MerchantProfile, ExtensionProfile
 from accounts import constants as c
 from accounts import utils as u
 
@@ -88,7 +90,22 @@ class MerchantViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(methods=['POST'], permission_classes=[AllowAny], detail=True)
     def create_profile(self, request, pk=None):
-        pass
+        user = self.get_object()
+        product = request.data.get('product')
+        description = request.data.get('description')
+        profile = MerchantProfile.objects.create(
+            product=product,
+            description=description,
+            user=user
+        )
+
+        serializer = MerchantProfileSerializer(profile)
+        return Response(
+            {
+                'data': serializer.data
+            },
+            status.HTTP_201_CREATED
+        )
 
 
 class ExtensionViewSet(viewsets.ReadOnlyModelViewSet):
@@ -152,4 +169,25 @@ class ExtensionViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
+        )
+
+    @action(methods=['POST'], permission_classes=[AllowAny], detail=True)
+    def create_profile(self, request, pk=None):
+        officer = self.get_object()
+        role = request.data.get('role', None)
+        description = request.data.get('description', None)
+
+        profile = ExtensionProfile.objects.create(
+            role=role,
+            description=description,
+            user=officer
+        )
+
+        serializer = ExtensionProfileSerializer(profile)
+
+        return Response(
+            {
+                'data': serializer.data
+            },
+            status.HTTP_201_CREATED
         )

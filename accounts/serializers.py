@@ -93,7 +93,7 @@ class SignInSerializer(serializers.Serializer):
 
 
 class MerchantProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    user = UserSerializer(read_only=True)
 
     class Meta:
         model = MerchantProfile
@@ -101,7 +101,7 @@ class MerchantProfileSerializer(serializers.ModelSerializer):
 
 
 class ExtensionProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    user = UserSerializer(read_only=True)
 
     class Meta:
         model = ExtensionProfile
