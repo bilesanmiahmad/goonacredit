@@ -11,46 +11,14 @@ from accounts import constants as c
 # Create your models here.
 
 
-class Farmer(models.Model):
-    family_name = models.CharField(
-        _('family name'),
-        max_length=20,
-        blank=True
-    )
-    first_name = models.CharField(
-        _('first name'),
-        max_length=30,
-        blank=True
-    )
-    other_name = models.CharField(
-        _('other name'),
-        max_length=30,
-        blank=True
-    )
-    dob = models.DateField(
-        _('date of birth'),
-        blank=True,
-        null=True
-    )
+class FarmerProfile(models.Model):
     address = models.TextField(
         _('address'),
-        blank=True
-    )
-    phone = models.TextField(
-        _('phone number'),
         blank=True
     )
     family_size = models.SmallIntegerField(
         _('family size'),
         blank=True
-    )
-    farm_location = models.TextField(
-        _('farm location description'),
-        blank=True
-    )
-    farm_size = models.IntegerField(
-        _('farm size'),
-        default=0
     )
     credit_rating = models.SmallIntegerField(
         _('credit rating'),
@@ -141,8 +109,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
     gender = models.CharField(
         _('gender'),
-        max_length=10,
-        blank=True
+        max_length=1,
+        choices=c.GENDER_CHOICES,
+        default=c.MALE
     )
     date_of_birth = models.DateField(
         _('date of birth'),
@@ -153,7 +122,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         _('user type'),
         max_length=1,
         choices=c.USER_TYPE_CHOICES,
-        default=c.GOON
+        default=c.FARMER
     )
 
     is_verified = models.BooleanField(

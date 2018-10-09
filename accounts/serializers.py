@@ -2,19 +2,7 @@ from rest_framework import serializers
 
 from django.contrib.auth import authenticate
 
-from accounts.models import Farmer, User, MerchantProfile, ExtensionProfile
-
-
-class FarmerSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Farmer
-        fields = [
-            'id', 'family_name', 'first_name',
-            'other_name', 'dob', 'address', 'phone',
-            'family_size', 'farm_location', 'farm_size',
-            'credit_rating', 'photo'
-        ]
+from accounts.models import FarmerProfile, User, MerchantProfile, ExtensionProfile
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -106,3 +94,16 @@ class ExtensionProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExtensionProfile
         fields = ['id', 'user', 'role', 'description', 'created_at', 'updated_at']
+
+
+class FarmerProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = FarmerProfile
+        fields = [
+            'id', 'user', 'address', 'family_size',
+            'farm_location', 'farm_size',
+            'credit_rating', 'photo'
+        ]
+

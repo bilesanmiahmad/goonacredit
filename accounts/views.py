@@ -8,11 +8,11 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth.hashers import check_password
 
 from accounts.serializers import (
-    FarmerSerializer, SignupSerializer, UserSerializer,
+    FarmerProfileSerializer, SignupSerializer, UserSerializer,
     SignInSerializer, MerchantProfileSerializer, ExtensionProfileSerializer)
 from rest_framework.permissions import AllowAny
 
-from accounts.models import Farmer, User, MerchantProfile, ExtensionProfile
+from accounts.models import FarmerProfile, User, MerchantProfile, ExtensionProfile
 from accounts import constants as c
 from accounts import utils as u
 
@@ -20,8 +20,8 @@ from accounts import utils as u
 
 
 class FarmerViewSet(viewsets.ModelViewSet):
-    queryset = Farmer.objects.all()
-    serializer_class = FarmerSerializer
+    queryset = FarmerProfile.objects.all()
+    serializer_class = FarmerProfileSerializer
     permission_classes = [AllowAny]
 
 
