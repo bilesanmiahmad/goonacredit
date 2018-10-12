@@ -25,6 +25,7 @@ class SignupSerializer(serializers.Serializer):
     email = serializers.EmailField()
     phone = serializers.CharField()
     password = serializers.CharField()
+    user_type = serializers.CharField()
 
     def validate_email(self, value):
         try:
@@ -56,10 +57,28 @@ class SignupSerializer(serializers.Serializer):
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
             email=validated_data['email'],
-            phone_number=validated_data['phone']
+            phone_number=validated_data['phone'],
+            user_type=validated_data['user_type']
         )
 
         return user
+
+
+class ActivateSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    pin = serializers.CharField()
+
+    def validate(self, data):
+        pin = data.get('pin')
+        user = User.objects.get(id_number=pin, id=data.get('id'))
+
+        if not user:
+            raise serializers.ValidationError("User does not exist")
+        elif user.is_verified:
+            raise serializers.ValidationError("User is already verified")
+        else:
+            data['user'] = user
+            return data
 
 
 class SignInSerializer(serializers.Serializer):
@@ -85,7 +104,7 @@ class MerchantProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MerchantProfile
-        fields = ['id', 'user', 'product', 'description', 'created_at', 'updated_at']
+        fields = ['id', 'user', 'created_at', 'updated_at']
 
 
 class ExtensionProfileSerializer(serializers.ModelSerializer):
@@ -103,7 +122,6 @@ class FarmerProfileSerializer(serializers.ModelSerializer):
         model = FarmerProfile
         fields = [
             'id', 'user', 'address', 'family_size',
-            'farm_location', 'farm_size',
             'credit_rating', 'photo'
         ]
 

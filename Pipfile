@@ -10,6 +10,12 @@ django = "*"
 djangorestframework = "*"
 pillow = "*"
 requests = "*"
+django-environ = "*"
+"psycopg2-binary" = "*"
+"boto3" = "*"
+dj-database-url = "*"
+gunicorn = "*"
+whitenoise = "*"
 
 [requires]
 python_version = "3.5"

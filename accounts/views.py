@@ -9,7 +9,9 @@ from django.contrib.auth.hashers import check_password
 
 from accounts.serializers import (
     FarmerProfileSerializer, SignupSerializer, UserSerializer,
-    SignInSerializer, MerchantProfileSerializer, ExtensionProfileSerializer)
+    SignInSerializer, MerchantProfileSerializer, ExtensionProfileSerializer,
+    ActivateSerializer
+)
 from rest_framework.permissions import AllowAny
 
 from accounts.models import FarmerProfile, User, MerchantProfile, ExtensionProfile
@@ -19,10 +21,110 @@ from accounts import utils as u
 # Create your views here.
 
 
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = UserSerializer
+    model = User
+    permission_classes = AllowAny
+
+    # def get_queryset(self):
+    #     return User.objects.all()
+    #
+    # def list(self, request, *args, **kwargs):
+    #     merchants = User.objects.filter(user_type=c.MERCHANT)
+    #     serializer = self.serializer_class(merchants, many=True)
+    #
+    #     return Response(
+    #         {'data': serializer.data},
+    #         status.HTTP_200_OK
+    #     )
+    #
+    # def retrieve(self, request, pk=None, *args, **kwargs):
+    #     merchant = self.get_object()
+    #     serializer = self.serializer_class(merchant)
+    #
+    #     return Response(serializer.data, status.HTTP_200_OK)
+
+    @action(methods=['POST'], permission_classes=[AllowAny], detail=False)
+    def signup(self, request):
+        serializer = SignupSerializer(data=request.data)
+
+        url = "https://sms.nasaramobile.com/api/v2/sendsms"
+        # url = "http://sms.nasaramobile.com/api"
+        api_key = "5bb7abe8a36d65bb7abe8a3712"
+        goona_id = "GOONACREDIT"
+
+        if serializer.is_valid():
+            user = serializer.save()
+            if user is not None:
+                pin = random.randint(1000000, 9999999)
+                user.id_number = pin
+                user.set_password(serializer.validated_data['password'])
+                user.save()
+                message = "You are welcome to GOONACREDIT. Your verification key is " + user.id_number
+                sms_response = u.send_sms(url, api_key, goona_id, user.phone_number, message)
+
+                serializer = self.serializer_class(user)
+                return Response(serializer.data, status.HTTP_201_CREATED)
+
+    @action(methods=['POST'], permission_classes=[AllowAny], detail=True)
+    def verify(self, request, pk=None):
+        serializer = ActivateSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            user.is_verified = True
+            Token.objects.get_or_create(user=user)
+
+            serializer_data = UserSerializer(user)
+            return Response(
+                serializer_data.data,
+                status=status.HTTP_200_OK
+            )
+
+        return Response(
+            serializer.errors,
+            status.HTTP_400_BAD_REQUEST
+        )
+
+    @action(methods=['POST'], permission_classes=[AllowAny], detail=False)
+    def signin(self, request):
+        serializer = SignInSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            Token.objects.get_or_create(user=user)
+
+            serialized_data = UserSerializer(user)
+            return Response(
+                serialized_data.data,
+                status=status.HTTP_200_OK
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
 class FarmerViewSet(viewsets.ModelViewSet):
-    queryset = FarmerProfile.objects.all()
-    serializer_class = FarmerProfileSerializer
+    serializer_class = UserSerializer
     permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        return User.objects.filter(user_type=c.FARMER)
+
+    def list(self, request, *args, **kwargs):
+        farmers = User.objects.filter(user_type=c.FARMER)
+        serializer = self.serializer_class(farmers, many=True)
+
+        return Response(
+            {'data': serializer.data},
+            status.HTTP_200_OK
+        )
+
+    def retrieve(self, request, pk=None, *args, **kwargs):
+        farmer = self.get_object()
+        serializer = self.serializer_class(farmer)
+
+        return Response(serializer.data, status.HTTP_200_OK)
 
 
 class MerchantViewSet(viewsets.ReadOnlyModelViewSet):
