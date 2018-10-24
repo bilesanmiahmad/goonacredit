@@ -126,6 +126,27 @@ class FarmerViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data, status.HTTP_200_OK)
 
+    @action(methods=['POST'], permission_classes=[AllowAny], detail=True)
+    def create_profile(self, request, pk=None):
+        user = self.get_object()
+        address = request.data.get('address', None)
+        family_size = request.data.get('family_size', None)
+        credit = request.data.get('credit', None)
+        profile = FarmerProfile.objects.create(
+            user=user,
+            address=address,
+            family_size=int(family_size),
+            credit_rating=int(credit)
+        )
+        serializer = FarmerProfileSerializer(profile)
+
+        return Response(
+            {
+                'results': serializer.data
+            },
+            status.HTTP_201_CREATED
+        )
+
 
 class MerchantViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = UserSerializer
@@ -147,48 +168,6 @@ class MerchantViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = self.serializer_class(merchant)
 
         return Response(serializer.data, status.HTTP_200_OK)
-
-    @action(methods=['POST'], permission_classes=[AllowAny], detail=False)
-    def signup(self, request):
-        serializer = SignupSerializer(data=request.data)
-
-        url = "https://sms.nasaramobile.com/api/v2/sendsms"
-        # url = "http://sms.nasaramobile.com/api"
-        api_key = "5bb7abe8a36d65bb7abe8a3712"
-        goona_id = "GOONACREDIT"
-        message = "You are welcome to GOONACREDIT"
-
-        if serializer.is_valid():
-            user = serializer.save()
-            if user is not None:
-                pin = random.randint(1000000, 9999999)
-                user.id_number = pin
-                user.user_type = c.MERCHANT
-                user.set_password(serializer.validated_data['password'])
-                user.save()
-
-                sms_response = u.send_sms(url, api_key, goona_id, user.phone_number, message)
-
-                serializer = self.serializer_class(user)
-                return Response(serializer.data, status.HTTP_201_CREATED)
-
-    @action(methods=['POST'], permission_classes=[AllowAny], detail=False)
-    def signin(self, request):
-        serializer = SignInSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.validated_data['user']
-            Token.objects.get_or_create(user=user)
-
-            serialized_data = UserSerializer(user)
-            return Response(
-                serialized_data.data,
-                status=status.HTTP_200_OK
-            )
-
-        return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST
-        )
 
     @action(methods=['POST'], permission_classes=[AllowAny], detail=True)
     def create_profile(self, request, pk=None):
@@ -230,48 +209,6 @@ class ExtensionViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = self.serializer_class(officer)
 
         return Response(serializer.data, status.HTTP_200_OK)
-
-    @action(methods=['POST'], permission_classes=[AllowAny], detail=False)
-    def signup(self, request):
-        serializer = SignupSerializer(data=request.data)
-
-        sms_url = "http://sms.nasaramobile.com/api/v2/sendsms"
-        url = "http://sms.nasaramobile.com/api"
-        api_key = "5bb7abe8a36d65bb7abe8a3712"
-        goona_id = "GOONACREDIT"
-        message = "You are welcome to GOONACREDIT"
-
-        if serializer.is_valid():
-            user = serializer.save()
-            if user is not None:
-                pin = random.randint(1000000, 9999999)
-                user.id_number = pin
-                user.user_type = c.EXTENSION
-                user.set_password(serializer.validated_data['password'])
-                user.save()
-
-                sms_response = u.send_sms(url, api_key, goona_id, user.phone_number, message)
-
-                serializer = self.serializer_class(user)
-                return Response(serializer.data, status.HTTP_201_CREATED)
-
-    @action(methods=['POST'], permission_classes=[AllowAny], detail=False)
-    def signin(self, request):
-        serializer = SignInSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.validated_data['user']
-            Token.objects.get_or_create(user=user)
-
-            serialized_data = UserSerializer(user)
-            return Response(
-                serialized_data.data,
-                status=status.HTTP_200_OK
-            )
-
-        return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST
-        )
 
     @action(methods=['POST'], permission_classes=[AllowAny], detail=True)
     def create_profile(self, request, pk=None):

@@ -129,6 +129,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         default=False
     )
 
+    profile_created = models.BooleanField(
+        _('Profile status'),
+        default=False
+    )
+
     is_staff = models.BooleanField(
         _('staff status'),
         default=False,
