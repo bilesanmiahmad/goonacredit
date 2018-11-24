@@ -20,8 +20,10 @@ from rest_framework.routers import DefaultRouter
 from accounts import views
 
 router = DefaultRouter()
+router.register(r'accounts', views.UserViewSet, 'accounts')
 router.register(r'farmers', views.FarmerViewSet, 'farmers')
 router.register(r'merchants', views.MerchantViewSet, 'merchants')
+router.register(r'officers', views.ExtensionViewSet, 'officers')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

@@ -56,8 +56,6 @@ docs/_build/
 .AppleDouble
 .LSOverride
 
-# Icon must ends with two \r.
-Icon
 
 # Thumbnails
 ._*
@@ -78,6 +76,7 @@ Icon
 
 #pycharm
 .idea/
+.idea
 .vscode
 #heroku
 heroku.log

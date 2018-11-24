@@ -14,8 +14,8 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'first_name', 'last_name', 'email',
             'country_code', 'phone_number', 'gender',
-            'date_of_birth', 'auth_token', 'user_type', 'last_login',
-            'date_joined'
+            'date_of_birth', 'auth_token', 'user_type',
+            'is_verified', 'last_login', 'date_joined'
                   ]
 
 

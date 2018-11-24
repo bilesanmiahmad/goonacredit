@@ -1,5 +1,5 @@
 import random
-from django.shortcuts import render
+from django.conf import settings
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -23,7 +23,7 @@ from accounts import utils as u
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = UserSerializer
-    model = User
+    queryset = User.objects.all()
     permission_classes = AllowAny
 
     # def get_queryset(self):
@@ -50,7 +50,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 
         url = "https://sms.nasaramobile.com/api/v2/sendsms"
         # url = "http://sms.nasaramobile.com/api"
-        api_key = "5bb7abe8a36d65bb7abe8a3712"
+        api_key = settings.SMS_KEY
         goona_id = "GOONACREDIT"
 
         if serializer.is_valid():
@@ -60,14 +60,14 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
                 user.id_number = pin
                 user.set_password(serializer.validated_data['password'])
                 user.save()
-                message = "You are welcome to GOONACREDIT. Your verification key is " + user.id_number
+                message = "You are welcome to GOONACREDIT. Your verification key is " + str(user.id_number)
                 sms_response = u.send_sms(url, api_key, goona_id, user.phone_number, message)
 
                 serializer = self.serializer_class(user)
                 return Response(serializer.data, status.HTTP_201_CREATED)
 
-    @action(methods=['POST'], permission_classes=[AllowAny], detail=True)
-    def verify(self, request, pk=None):
+    @action(methods=['POST'], permission_classes=[AllowAny], detail=False)
+    def verify(self, request):
         serializer = ActivateSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
@@ -146,6 +146,10 @@ class FarmerViewSet(viewsets.ModelViewSet):
             },
             status.HTTP_201_CREATED
         )
+
+    @action(methods=['POST'], permission_classes=[AllowAny], detail=True)
+    def add_farm(self, request, pk=None):
+        pass
 
 
 class MerchantViewSet(viewsets.ReadOnlyModelViewSet):
